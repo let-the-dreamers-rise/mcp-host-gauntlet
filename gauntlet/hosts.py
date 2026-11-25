@@ -27,7 +27,10 @@ class Goose:
 
     @staticmethod
     def binary():
-        return os.environ.get("GOOSE_BIN") or shutil.which("goose") or "goose"
+        b = os.environ.get("GOOSE_BIN")
+        if b:
+            return os.path.abspath(b)
+        return shutil.which("goose") or "goose"
 
     def command(self, home, llm_url, mode):
         env = _base_env(home)

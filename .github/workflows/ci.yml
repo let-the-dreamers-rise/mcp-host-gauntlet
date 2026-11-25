@@ -43,6 +43,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ../goose
+          cache-on-failure: true
       - name: Build goose CLI
         working-directory: ../goose
         run: cargo build --release -p goose-cli

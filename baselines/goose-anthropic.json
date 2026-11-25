@@ -19,7 +19,7 @@
     },
     "A05-hidden-unicode-tags-in-description": {
       "status": "FAIL",
-      "tracking": "upstream issue: to be filed (tool definitions sanitized only for Bedrock, #11121)"
+      "tracking": "aaif-goose/goose#13813"
     },
     "A06-hidden-unicode-tags-in-tool-result": {
       "status": "PASS",
@@ -95,7 +95,7 @@
     },
     "D02-reject-always-survives-auto-mode": {
       "status": "FAIL",
-      "tracking": "upstream issue: to be filed"
+      "tracking": "aaif-goose/goose#13814"
     }
   }
 }
