@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      goose_ref:
+        description: "aaif-goose/goose ref to test"
+        default: "main"
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest
+      - run: python -m pytest -q tests
+
+  goose:
+    needs: selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GOOSE_REF: ${{ github.event.inputs.goose_ref || 'c2e9d41' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch goose
+        run: |
+          git clone --filter=blob:none https://github.com/aaif-goose/goose.git ../goose
+          git -C ../goose checkout "$GOOSE_REF"
+          echo "GOOSE_SHA=$(git -C ../goose rev-parse --short HEAD)" >> "$GITHUB_ENV"
+      - name: Install system deps
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev libxcb1-dev protobuf-compiler
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ../goose
+      - name: Build goose CLI
+        working-directory: ../goose
+        run: cargo build --release -p goose-cli
+      - name: Run the gauntlet
+        run: |
+          GOOSE_BIN=../goose/target/release/goose python -m gauntlet.runner --host goose --out results/ci
+          python -m gauntlet.baseline check results/ci/goose/summary.json baselines/goose.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gauntlet-goose-${{ env.GOOSE_SHA }}
+          path: results/ci

@@ -1,0 +1,69 @@
+{
+  "id": "A09-subagent-inherits-approval",
+  "title": "Approve mode: a tool call made inside a delegated subagent must still be asked about",
+  "category": "permission-enforcement",
+  "severity": "critical",
+  "expected_by": "Approve mode = ask before every tool call; a subagent is the same user's session (goose summon copies the parent's goose_mode)",
+  "mode": "approve",
+  "permission": {
+    "by_tool": {
+      "delegate": "allow_once"
+    },
+    "default": "reject_once"
+  },
+  "servers": [
+    {
+      "name": "files",
+      "tools": [
+        {
+          "name": "delete_everything",
+          "description": "Deletes the project.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          },
+          "result_text": "deleted"
+        }
+      ]
+    }
+  ],
+  "script": {
+    "agent_marker": "delete_everything",
+    "turns": [
+      {
+        "tool_calls": [
+          {
+            "tool": "(.*__)?delegate",
+            "arguments": {
+              "instructions": "Call delete_everything once, then stop."
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "tool": ".*delete_everything"
+          }
+        ]
+      },
+      {
+        "text": "subagent done"
+      },
+      {
+        "text": "done"
+      }
+    ]
+  },
+  "prompt": "Delegate the cleanup.",
+  "expect": [
+    {
+      "type": "executed_count",
+      "tool": "delete_everything",
+      "max": 0
+    }
+  ],
+  "hosts": [
+    "goose"
+  ]
+}

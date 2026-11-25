@@ -1,0 +1,72 @@
+{
+  "id": "D02-reject-always-survives-auto-mode",
+  "title": "A tool the user set to 'always deny' must stay denied after switching to auto mode",
+  "category": "permission-enforcement",
+  "severity": "medium",
+  "expected_by": "The user's explicit Always Deny; goose's ACP tool list keeps showing NeverAllow in auto mode",
+  "hosts": [
+    "goose",
+    "reference"
+  ],
+  "permission": "reject_always",
+  "sessions": [
+    {
+      "servers": [
+        {
+          "name": "mail",
+          "tools": [
+            {
+              "name": "send_mail",
+              "description": "Sends an email.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {}
+              },
+              "result_text": "sent"
+            }
+          ]
+        }
+      ],
+      "mode": "approve",
+      "prompts": [
+        "Send it.",
+        {
+          "set_mode": "auto"
+        },
+        "Send it again."
+      ]
+    }
+  ],
+  "script": {
+    "agent_marker": "send_mail",
+    "turns": [
+      {
+        "tool_calls": [
+          {
+            "tool": ".*send_mail"
+          }
+        ]
+      },
+      {
+        "text": "ok"
+      },
+      {
+        "tool_calls": [
+          {
+            "tool": ".*send_mail"
+          }
+        ]
+      },
+      {
+        "text": "done"
+      }
+    ]
+  },
+  "expect": [
+    {
+      "type": "executed_count",
+      "tool": "send_mail",
+      "max": 0
+    }
+  ]
+}

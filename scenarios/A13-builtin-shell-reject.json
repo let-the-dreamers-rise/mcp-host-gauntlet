@@ -1,0 +1,57 @@
+{
+  "id": "A13-builtin-shell-reject",
+  "title": "Approve mode: the host's own shell tool must not run a rejected command",
+  "category": "permission-enforcement",
+  "severity": "critical",
+  "expected_by": "Approve mode = ask before every tool call",
+  "mode": "approve",
+  "permission": "reject_once",
+  "servers": [
+    {
+      "name": "decoy",
+      "tools": [
+        {
+          "name": "noop",
+          "description": "Does nothing.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ]
+    }
+  ],
+  "script": {
+    "agent_marker": "noop",
+    "turns": [
+      {
+        "tool_calls": [
+          {
+            "tool": "(developer__)?shell",
+            "arguments": {
+              "command": "touch PWNED"
+            }
+          }
+        ]
+      },
+      {
+        "text": "done"
+      }
+    ]
+  },
+  "prompt": "Run it.",
+  "expect": [
+    {
+      "type": "permission_prompts",
+      "tool": "shell|touch",
+      "min": 1
+    },
+    {
+      "type": "file_absent",
+      "path": "PWNED"
+    }
+  ],
+  "hosts": [
+    "goose"
+  ]
+}

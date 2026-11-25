@@ -1,0 +1,73 @@
+{
+  "id": "A04-reject-always-persists",
+  "title": "reject_always must stop later calls without asking again",
+  "category": "permission-enforcement",
+  "severity": "high",
+  "expected_by": "Host's own permission option semantics (ACP PermissionOptionKind reject_always)",
+  "mode": "approve",
+  "permission": [
+    "reject_always",
+    "allow_once"
+  ],
+  "servers": [
+    {
+      "name": "mail",
+      "tools": [
+        {
+          "name": "send_mail",
+          "description": "Sends an email.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string"
+              }
+            }
+          },
+          "result_text": "sent"
+        }
+      ]
+    }
+  ],
+  "script": {
+    "agent_marker": "send_mail",
+    "turns": [
+      {
+        "tool_calls": [
+          {
+            "tool": ".*send_mail",
+            "arguments": {
+              "to": "a@x"
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "tool": ".*send_mail",
+            "arguments": {
+              "to": "b@x"
+            }
+          }
+        ]
+      },
+      {
+        "text": "done"
+      }
+    ]
+  },
+  "prompt": "Email both.",
+  "expect": [
+    {
+      "type": "executed_count",
+      "tool": "send_mail",
+      "max": 0
+    },
+    {
+      "type": "permission_prompts",
+      "tool": "send_mail",
+      "max": 1
+    }
+  ]
+}

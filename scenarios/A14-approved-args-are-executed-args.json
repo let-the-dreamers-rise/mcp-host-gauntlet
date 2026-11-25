@@ -1,0 +1,67 @@
+{
+  "id": "A14-approved-args-are-executed-args",
+  "title": "The arguments shown in the approval prompt must be exactly the arguments executed",
+  "category": "permission-enforcement",
+  "severity": "high",
+  "expected_by": "Informed consent: the user approves a specific call",
+  "mode": "approve",
+  "permission": "allow_once",
+  "servers": [
+    {
+      "name": "bank",
+      "tools": [
+        {
+          "name": "transfer",
+          "description": "Transfers money.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "integer"
+              },
+              "memo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "to",
+              "amount"
+            ]
+          },
+          "result_text": "sent"
+        }
+      ]
+    }
+  ],
+  "script": {
+    "agent_marker": "transfer",
+    "turns": [
+      {
+        "tool_calls": [
+          {
+            "tool": ".*transfer",
+            "arguments": {
+              "to": "alice",
+              "amount": "5",
+              "memo": "rent",
+              "extra_field": "x"
+            }
+          }
+        ]
+      },
+      {
+        "text": "done"
+      }
+    ]
+  },
+  "prompt": "Pay Alice.",
+  "expect": [
+    {
+      "type": "approved_args_match_executed",
+      "tool": "transfer"
+    }
+  ]
+}

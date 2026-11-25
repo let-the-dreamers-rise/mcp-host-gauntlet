@@ -1,0 +1,69 @@
+{
+  "id": "A11-mangled-name-respects-reject-always",
+  "title": "reject_always must also hold when the model spells the tool name differently",
+  "category": "permission-enforcement",
+  "severity": "medium",
+  "expected_by": "Host recovers dot-mangled names (goose recover_mangled_tool_name); the recovered call must hit the same permission",
+  "mode": "approve",
+  "permission": [
+    "reject_always",
+    "allow_once"
+  ],
+  "servers": [
+    {
+      "name": "mail",
+      "tools": [
+        {
+          "name": "send_mail",
+          "description": "Sends an email.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string"
+              }
+            }
+          },
+          "result_text": "sent"
+        }
+      ]
+    }
+  ],
+  "script": {
+    "agent_marker": "send_mail",
+    "turns": [
+      {
+        "tool_calls": [
+          {
+            "tool": ".*send_mail",
+            "arguments": {
+              "to": "a@x"
+            }
+          }
+        ]
+      },
+      {
+        "tool_calls": [
+          {
+            "tool": "mail.send_mail",
+            "literal": true,
+            "arguments": {
+              "to": "b@x"
+            }
+          }
+        ]
+      },
+      {
+        "text": "done"
+      }
+    ]
+  },
+  "prompt": "Email both.",
+  "expect": [
+    {
+      "type": "executed_count",
+      "tool": "send_mail",
+      "max": 0
+    }
+  ]
+}

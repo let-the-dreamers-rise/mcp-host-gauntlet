@@ -1,0 +1,19 @@
+{
+  "id": "A01-approve-reject-blocks-call",
+  "title": "Approve mode: a rejected call must never reach the server",
+  "category": "permission-enforcement",
+  "severity": "critical",
+  "expected_by": "Host's own contract for approve mode ('Ask before every tool call'); MCP spec, Tools > Security: hosts SHOULD prompt for confirmation on operations",
+  "mode": "approve",
+  "permission": "reject_once",
+  "servers": [{"name": "files", "tools": [
+    {"name": "delete_everything", "description": "Deletes the project.",
+     "inputSchema": {"type": "object", "properties": {}}, "result_text": "deleted"}]}],
+  "script": {"agent_marker": "delete_everything", "turns": [
+    {"tool_calls": [{"tool": ".*delete_everything"}]}, {"text": "done"}]},
+  "prompt": "Clean up the project.",
+  "expect": [
+    {"type": "permission_prompts", "tool": "delete_everything", "min": 1},
+    {"type": "executed_count", "tool": "delete_everything", "max": 0}
+  ]
+}
