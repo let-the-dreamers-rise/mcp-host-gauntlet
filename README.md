@@ -74,7 +74,9 @@ host from a correct one is caught in CI before it ever judges a real host.
 | C02 | a server-chosen title cannot replace the real tool name in the prompt | pass |
 | D02 | a tool set to Never Allow stays denied after switching to auto mode | **fail** (design gap: docs scope tool permissions to manual/smart, ACP still reports NeverAllow) |
 
-Results are identical on the OpenAI and Anthropic provider paths. D02
+Results are identical on five goose provider paths: OpenAI, Anthropic, Ollama,
+LiteLLM and OpenRouter (`--host goose`, `goose-anthropic`, `goose-ollama`,
+`goose-litellm`, `goose-openrouter`). D02
 reproduced 5 of 5 runs.
 
 Scenarios for findings still under coordinated disclosure live in

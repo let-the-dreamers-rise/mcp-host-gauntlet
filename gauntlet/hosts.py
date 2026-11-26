@@ -11,7 +11,7 @@ HERE = Path(__file__).resolve().parent
 
 def _base_env(home):
     env = {k: v for k, v in os.environ.items()
-           if not k.startswith(("GOOSE_", "OPENAI_", "ANTHROPIC_"))}
+           if not k.startswith(("GOOSE_", "OPENAI_", "ANTHROPIC_", "OLLAMA_", "LITELLM_", "OPENROUTER_"))}
     env["HOME"] = home
     env["XDG_CONFIG_HOME"] = os.path.join(home, ".config")
     env["XDG_DATA_HOME"] = os.path.join(home, ".local", "share")
@@ -44,6 +44,10 @@ class Goose:
         if self.provider == "anthropic":
             env.update({"GOOSE_PROVIDER": "anthropic", "GOOSE_MODEL": "claude-gauntlet",
                         "ANTHROPIC_API_KEY": "gauntlet", "ANTHROPIC_HOST": llm_url})
+        elif self.provider in ("ollama", "litellm", "openrouter"):
+            up = self.provider.upper()
+            env.update({"GOOSE_PROVIDER": self.provider, "GOOSE_MODEL": "gauntlet-model",
+                        up + "_API_KEY": "gauntlet", up + "_HOST": llm_url})
         else:
             env.update({"GOOSE_PROVIDER": "openai", "GOOSE_MODEL": "gauntlet-model",
                         "OPENAI_API_KEY": "gauntlet", "OPENAI_HOST": llm_url})
@@ -77,4 +81,6 @@ class Reference:
         client.request("session/set_mode", {"sessionId": session_id, "modeId": mode})
 
 
-HOSTS = {"goose": Goose(), "goose-anthropic": Goose("anthropic"), "reference": Reference()}
+HOSTS = {"goose": Goose(), "goose-anthropic": Goose("anthropic"),
+         "goose-ollama": Goose("ollama"), "goose-litellm": Goose("litellm"),
+         "goose-openrouter": Goose("openrouter"), "reference": Reference()}
