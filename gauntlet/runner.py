@@ -303,6 +303,12 @@ def main(argv=None):
     for s in load_scenarios(args.scenarios, args.only):
         if s.get("hosts") and not any(args.host == h or args.host.startswith(h + "-") for h in s["hosts"]):
             continue
+        modes = getattr(HOSTS[args.host], "modes", None)
+        wanted = [x.get("mode", "approve") for x in s.get("sessions", [])] or [s.get("mode", "approve")]
+        wanted += [p["set_mode"] for x in s.get("sessions", []) for p in x.get("prompts", [])
+                   if isinstance(p, dict) and "set_mode" in p]
+        if modes and any(m not in modes for m in wanted):
+            continue  # the host has no equivalent of this approval mode
         rec = run_scenario(s, args.host, args.out, args.timeout)
         records.append(rec)
         print(f"{rec['status']:5} {rec['id']:40} {rec['seconds']:6.1f}s  "

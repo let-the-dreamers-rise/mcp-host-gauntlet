@@ -63,6 +63,45 @@ class Goose:
             client.request("session/set_mode", {"sessionId": session_id, "modeId": mode})
 
 
+class OpenCode:
+    """opencode (https://opencode.ai) as an ACP agent: `opencode acp`, pointed
+    at the scripted model through an OpenAI-compatible custom provider."""
+
+    name = "opencode"
+    modes = ("approve", "auto")
+
+    @staticmethod
+    def binary():
+        b = os.environ.get("OPENCODE_BIN")
+        return os.path.abspath(b) if b else (shutil.which("opencode") or "opencode")
+
+    def command(self, home, llm_url, mode):
+        import json
+        env = _base_env(home)
+        env["OPENCODE_DISABLE_AUTOUPDATE"] = "1"
+        cfg = {
+            "$schema": "https://opencode.ai/config.json",
+            "autoupdate": False,
+            "share": "disabled",
+            "provider": {"gauntlet": {
+                "npm": "@ai-sdk/openai-compatible",
+                "name": "gauntlet",
+                "options": {"baseURL": llm_url + "/v1", "apiKey": "gauntlet"},
+                "models": {"gauntlet-model": {"name": "gauntlet-model", "tool_call": True}},
+            }},
+            "model": "gauntlet/gauntlet-model",
+            "small_model": "gauntlet/gauntlet-model",
+            "permission": {"*": "allow" if mode == "auto" else "ask"},
+        }
+        d = Path(home) / ".config" / "opencode"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "opencode.json").write_text(json.dumps(cfg, indent=2))
+        return [self.binary(), "acp"], env
+
+    def set_mode(self, client, session_id, mode, session_response):
+        return
+
+
 class Reference:
     """The bundled reference host (gauntlet/reference_host.py): a small,
     deliberately strict ACP host used to self-test the oracles in CI.
@@ -81,6 +120,6 @@ class Reference:
         client.request("session/set_mode", {"sessionId": session_id, "modeId": mode})
 
 
-HOSTS = {"goose": Goose(), "goose-anthropic": Goose("anthropic"),
+HOSTS = {"opencode": OpenCode(), "goose": Goose(), "goose-anthropic": Goose("anthropic"),
          "goose-ollama": Goose("ollama"), "goose-litellm": Goose("litellm"),
          "goose-openrouter": Goose("openrouter"), "reference": Reference()}

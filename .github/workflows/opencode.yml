@@ -1,0 +1,45 @@
+name: opencode
+
+on:
+  push:
+    branches: [opencode]
+  workflow_dispatch:
+
+jobs:
+  opencode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install opencode
+        run: |
+          npm install -g opencode-ai@1.19.6
+          opencode --version
+          opencode --help || true
+          opencode acp --help || true
+      - name: Run the gauntlet
+        run: |
+          python -m gauntlet.runner --host opencode --out results/ci --timeout 120 ${ONLY:+--only "$ONLY"} || true
+        env:
+          ONLY: ${{ vars.OPENCODE_ONLY }}
+      - name: Show diagnostics
+        if: always()
+        run: |
+          for d in results/ci/opencode/A01* results/ci/opencode/A05*; do
+            echo "=== $d"; cat $d/verdict.json || true
+            echo "--- stderr"; tail -40 $d/host-stderr.log || true
+            echo "--- acp"; head -c 6000 $d/acp.json || true
+            echo "--- model"; head -c 3000 $d/model.jsonl || true
+            echo "--- server"; cat $d/*server*.jsonl 2>/dev/null | head -c 2000 || true
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opencode-results
+          path: results/ci
