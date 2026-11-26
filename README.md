@@ -34,6 +34,7 @@ pip install pytest
 python -m pytest -q tests                      # self-tests, no host needed
 GOOSE_BIN=/path/to/goose python -m gauntlet.runner --host goose
 GOOSE_BIN=/path/to/goose python -m gauntlet.runner --host goose-anthropic
+python -m gauntlet.runner --host opencode       # needs `opencode` on PATH
 python -m gauntlet.baseline check results/goose/summary.json baselines/goose.json
 ```
 
@@ -78,6 +79,23 @@ Results are identical on five goose provider paths: OpenAI, Anthropic, Ollama,
 LiteLLM and OpenRouter (`--host goose`, `goose-anthropic`, `goose-ollama`,
 `goose-litellm`, `goose-openrouter`). D02
 reproduced 5 of 5 runs.
+
+### Second host: opencode 1.19.6
+
+`--host opencode` drives `opencode acp` through an OpenAI-compatible custom
+provider (CI job `opencode`). 19 scenarios apply (opencode has no smart-approve
+mode and no goose built-ins): 8 pass, 9 fail, 2 are N/A because opencode never
+offers a reject-always option.
+
+- The approve/reject promises hold: a rejected call never reaches the server,
+  `readOnlyHint` cannot skip a prompt, sampling and elicitation are not answered
+  for the user.
+- A14 fails: the ACP permission request for an MCP tool carries `rawInput: {}`,
+  so the user approves `bank_transfer` without seeing its arguments; they show
+  up in a `tool_call_update` only after approval.
+- opencode strips no Unicode Tag characters on any channel (7 scenarios). It
+  does not claim to, so this is a comparison point, not a broken promise.
+- A03 fails as on goose: allow-always survives a tool redefinition.
 
 Scenarios for findings still under coordinated disclosure live in
 `embargoed/` (not published). The runner, self-tests and baseline check pick

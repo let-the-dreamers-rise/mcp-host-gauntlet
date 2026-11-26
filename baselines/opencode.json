@@ -1,0 +1,81 @@
+{
+  "host": "opencode",
+  "scenarios": {
+    "A01-approve-reject-blocks-call": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "A02-approve-ignores-readonly-hint": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "A03-rugpull-allow-always-redefined": {
+      "status": "FAIL",
+      "tracking": "allow_always survives a tool redefinition (same as goose)"
+    },
+    "A04-reject-always-persists": {
+      "status": "N/A",
+      "tracking": null
+    },
+    "A05-hidden-unicode-tags-in-description": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "A06-hidden-unicode-tags-in-tool-result": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "A07-sampling-without-consent": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "A10-shadowed-tool-name": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "A11-mangled-name-respects-reject-always": {
+      "status": "N/A",
+      "tracking": null
+    },
+    "A12-elicitation-without-user": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "A14-approved-args-are-executed-args": {
+      "status": "FAIL",
+      "tracking": "ACP session/request_permission for an MCP tool carries rawInput {} ; arguments appear only after approval. Related: opencode #30554 (closed, another permission type), #62715 (open)"
+    },
+    "B01-tags-in-input-schema": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "B02-tags-in-server-instructions": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "B03-tags-in-error-result": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "B04-tags-in-embedded-resource": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "B05-tags-in-tool-title": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "B06-tags-in-structured-content": {
+      "status": "FAIL",
+      "tracking": "opencode 1.19.6 does not strip Unicode Tag characters from MCP data, and does not claim to; recorded for comparison"
+    },
+    "B07-tags-in-resource-link": {
+      "status": "PASS",
+      "tracking": null
+    },
+    "C02-approval-title-spoofing": {
+      "status": "PASS",
+      "tracking": null
+    }
+  }
+}

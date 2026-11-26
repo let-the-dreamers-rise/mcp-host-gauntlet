@@ -2,7 +2,9 @@ name: opencode
 
 on:
   push:
-    branches: [opencode]
+    branches: [main, opencode]
+  schedule:
+    - cron: "47 3 * * 1"
   workflow_dispatch:
 
 jobs:
@@ -21,23 +23,10 @@ jobs:
         run: |
           npm install -g opencode-ai@1.19.6
           opencode --version
-          opencode --help || true
-          opencode acp --help || true
       - name: Run the gauntlet
         run: |
-          python -m gauntlet.runner --host opencode --out results/ci --timeout 120 ${ONLY:+--only "$ONLY"} || true
-        env:
-          ONLY: ${{ vars.OPENCODE_ONLY }}
-      - name: Show diagnostics
-        if: always()
-        run: |
-          for d in results/ci/opencode/A01* results/ci/opencode/A05*; do
-            echo "=== $d"; cat $d/verdict.json || true
-            echo "--- stderr"; tail -40 $d/host-stderr.log || true
-            echo "--- acp"; head -c 6000 $d/acp.json || true
-            echo "--- model"; head -c 3000 $d/model.jsonl || true
-            echo "--- server"; cat $d/*server*.jsonl 2>/dev/null | head -c 2000 || true
-          done
+          python -m gauntlet.runner --host opencode --out results/ci --timeout 120
+          python -m gauntlet.baseline check results/ci/opencode/summary.json baselines/opencode.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
