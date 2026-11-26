@@ -253,6 +253,13 @@ def run_scenario(scenario, host, out_dir, timeout):
         error = "the host never sent the scripted model an agent request (tools not attached?)"
     else:
         status = "PASS" if all(r["pass"] for r in results) else "FAIL"
+    missing = sorted({r["answer"] for r in client.permission_requests
+                      if r["answer"] is not None
+                      and r["answer"] not in [o.get("optionId") for o in r["params"].get("options", [])]})
+    if missing and status in ("PASS", "FAIL"):
+        # the scenario needs an answer this host never offers, so it cannot judge the host
+        status = "N/A"
+        error = f"host does not offer the permission option(s) {missing}"
     record = {
         "id": scenario["id"], "title": scenario.get("title"), "host": host,
         "mode": scenario.get("mode") or sessions[0].get("mode", "approve"), "status": status, "error": error,
@@ -317,7 +324,7 @@ def main(argv=None):
     summary = Path(args.out) / args.host / "summary.json"
     summary.parent.mkdir(parents=True, exist_ok=True)
     summary.write_text(json.dumps(records, indent=2, ensure_ascii=False))
-    counts = {k: sum(1 for r in records if r["status"] == k) for k in ("PASS", "FAIL", "ERROR")}
+    counts = {k: sum(1 for r in records if r["status"] == k) for k in ("PASS", "FAIL", "ERROR", "N/A")}
     print(json.dumps(counts))
     return 0 if counts["ERROR"] == 0 else 2
 
